@@ -1,0 +1,65 @@
+Project File Structure Analysis and Explanation
+
+This document explains the purpose and functionality of each file in the `phi3-cicids-adversarial` project. The project aims to fine-tune the Microsoft Phi-3 Mini language model for network intrusion detection using the CICIDS dataset, enhancing it with adversarial training for robustness.
+
+Files Overview:
+
+1. adversarial_generator.py
+   - Purpose: Generates synthetic adversarial samples to augment the training data.
+   - Key Functionality: 
+     - Creates three types of attacks: 'evasion' (modifying attacks to look benign), 'poisoning' (adding noise to benign traffic), and 'novel' (synthetic hybrid patterns).
+     - Used to make the model more robust against sophisticated evasion attempts.
+
+2. config.py
+   - Purpose: Central configuration file for the project.
+   - Key Functionality:
+     - Defines the `TrainingConfig` dataclass.
+     - Stores settings for model parameters (name, quantization), data paths, training hyperparameters (batch size, learning rate), LoRA settings, and hardware definitions.
+
+3. data_loader.py
+   - Purpose: Handles data ingestion, preprocessing, and formatting.
+   - Key Functionality:
+     - Loads CSV files from the `cicids` directory.
+     - Preprocesses data: handles missing values, converts labels to binary (BENIGN/ATTACK), and extracts numeric features.
+     - Formats raw network flow data into natural language prompts suitable for the LLM (Phi-3).
+     - Tokenizes text and splits data into training and evaluation sets.
+
+4. inference.py
+   - Purpose: Script for running predictions with the trained model.
+   - Key Functionality:
+     - Loads the base Phi-3 model and the trained LoRA adapter.
+     - Defines `CICIDSClassifier` class to take network feature dictionaries as input.
+     - Generates text classification (BENIGN, MALICIOUS, ADVERSARIAL_ATTACK) and reasoning for given network flows.
+     - Includes a `main()` function with test cases to demonstrate usage.
+
+5. model_setup.py
+   - Purpose: Manages the initialization of the Large Language Model.
+   - Key Functionality:
+     - Configures 4-bit quantization (BitsAndBytes) to fit the model in limited VRAM.
+     - Loads the tokenizer and model from Hugging Face.
+     - Applies Low-Rank Adaptation (LoRA) to specific model modules (qkv_proj, etc.) to enable efficient fine-tuning.
+
+6. train.py
+   - Purpose: The main execution script for training the model.
+   - Key Functionality:
+     - Orchestrates the entire pipeline: Setup -> Data Loading -> Adversarial Generation -> Model Prep -> Training.
+     - Initializes the `AdversarialTrainer`.
+     - Handles checkpoint detection to resume training if interrupted.
+     - Saves the final model and tokenizer.
+
+7. trainer.py
+   - Purpose: Custom training logic extending Hugging Face's `Trainer`.
+   - Key Functionality:
+     - Defines `AdversarialTrainer` class.
+     - Overrides `compute_loss` to implement adversarial training. It creates on-the-fly adversarial examples (using gradient perturbations similar to FGSM) and mixes their loss with the standard loss to encourage robustness.
+     - Manages saving and loading of checkpoints (model, optimizer, scheduler).
+
+8. utils.py
+   - Purpose: General utility helper functions.
+   - Key Functionality:
+     - `setup_directories`: Creates output folders for checkpoints, logs, etc.
+     - `save_config` / `load_config`: JSON serialization for configurations.
+     - `estimate_memory_usage`: Provides a rough estimate of VRAM requirements based on model size and batch parameters.
+
+9. cicids/ (Directory)
+   - Content: Contains the raw CSV data files for the CICIDS dataset (e.g., monday.csv, tuesday.csv, etc.) containing network traffic records.
