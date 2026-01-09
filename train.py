@@ -25,6 +25,8 @@ from utils import setup_directories, save_config, estimate_memory_usage
 from transformers.cache_utils import DynamicCache
 if not hasattr(DynamicCache, "get_usable_length"):
     def get_usable_length(self, input_seq_length, layer_idx=None):
+        if layer_idx is None:
+            layer_idx = 0
         return self.get_seq_length(layer_idx)
     DynamicCache.get_usable_length = get_usable_length
     print("[+] Applied monkey patch for DynamicCache.get_usable_length")
