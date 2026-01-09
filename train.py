@@ -227,6 +227,11 @@ def main():
     # Initialize trainer with correct data collator
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
     
+    # Limit evaluation dataset to 1000 samples for faster validation
+    if len(eval_dataset) > 1000:
+        print(f"[+] Limiting evaluation set from {len(eval_dataset)} to 1000 samples for speed")
+        eval_dataset = eval_dataset.select(range(1000))
+
     trainer = AdversarialTrainer(
         model=model,
         args=training_args,
