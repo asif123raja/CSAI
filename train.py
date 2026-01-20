@@ -56,7 +56,7 @@ def validate_datasets(train_dataset, eval_dataset):
     return True
 
 def find_latest_checkpoint(checkpoint_dir):
-    """Find the latest checkpoint directory"""
+    """Find the latest valid checkpoint directory"""
     if not os.path.exists(checkpoint_dir):
         return None
     
@@ -65,7 +65,11 @@ def find_latest_checkpoint(checkpoint_dir):
         if item.startswith("checkpoint-"):
             try:
                 step = int(item.split("-")[-1])
-                checkpoints.append((step, os.path.join(checkpoint_dir, item)))
+                checkpoint_path = os.path.join(checkpoint_dir, item)
+                
+                # Check for essential checkpoint files
+                if os.path.exists(os.path.join(checkpoint_path, "trainer_state.json")):
+                    checkpoints.append((step, checkpoint_path))
             except:
                 continue
     
