@@ -84,7 +84,8 @@ class AdversarialTrainer(Trainer):
         Override the parent method to add custom checkpoint saving
         """
         # Call parent save method first
-        super()._save_checkpoint(model, trial, metrics)
+        # transformers > 4.36 _save_checkpoint doesn't accept metrics
+        super()._save_checkpoint(model, trial)
         
         # Additional custom saving if needed
         if self.checkpoint_dir and hasattr(self.state, 'global_step'):
@@ -180,7 +181,7 @@ class AdversarialTrainer(Trainer):
             
             # Also save the base model config for reference
             base_config = {
-                'base_model_name_or_path': self.config._name_or_path,
+                'base_model_name_or_path': self.model.config._name_or_path,
                 'peft_type': 'LORA',
                 'task_type': 'CAUSAL_LM',
             }
